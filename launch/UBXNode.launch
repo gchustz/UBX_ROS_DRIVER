@@ -1,0 +1,7 @@
+
+<launch>
+
+<rosparam file="$(find UBX_ROS_DRIVER)/config/default.yaml" />
+<node name="ubx_ros" pkg="UBX_ROS_DRIVER" type="ubx_ros" output="screen"/>
+
+</launch>

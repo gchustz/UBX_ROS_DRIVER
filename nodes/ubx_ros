@@ -1,0 +1,107 @@
+
+#!/usr/bin/env python3 
+
+# import libraries
+import rospy
+from ubxtranslator.core import Parser
+from ubxtranslator.predefined import NAV_CLS, ACK_CLS
+import sys
+sys.path.append('../src/')
+import core
+import serial
+
+# For this to work, you need ubxtranslator package from pip
+class UBXNode: 
+    def __init__(self):
+
+        # Read ros parameters and establish defaults
+
+        # Determine the desired state
+        if rospy.has_param('UBXNode_mode'):
+            self.mode = rospy.get_param('UBXNode_mode')
+        else:
+            self.mode = 'DGPS'
+
+        if rospy.has_param('UBXNode_node_str'):
+            node_str = rospy.get_param('UBXNode_node_str')
+        else:
+            node_str = 'UBX_Publisher'
+
+        if rospy.has_param('UBXNode_frame_id'):
+            self.frame_id = rospy.get_param('UBXNode_frame_id')
+        else:
+            self.frame_id = 'UBX_GPS'
+
+        if rospy.has_param('UBXNode_port'):
+            port_str = rospy.get_param('UBXNode_port')
+        else:
+            port_str = '/dev/ArduSimple'
+        
+        if rospy.has_param('UBXNode_baud'):
+            baud_rate = rospy.get_param('UBXNode_baud')
+
+        else:
+            baud_rate = 115200
+
+        if rospy.has_param('UBXNode_topic_str'):
+            topic_str = rospy.get_param('UBX_topic_str')
+        else:
+            topic_str = 'UBX_out'
+
+        if rospy.has_param('UBXNode_delay_sec') :
+            self.delay = rospy.get_param('UBXNode_delay_sec')
+        else:
+            self.delay = 1e-3
+        
+
+        
+        # Set up the parser
+        self.parser = Parser([NAV_CLS, ACK_CLS])
+
+        # Set up ros node
+        rospy.init_node( node_str )
+
+        # Set up the port
+        self.port = serial.Serial(port_str, baudrate=baud_rate, timeout=0.1)
+
+        # Set up the interpreter:
+        if self.mode == 'DGPS':
+            self.intobj = core.DGPS_publisher(topic_str, self.frame_id)
+        elif self.mode == 'HPPOSLLH':
+            self.intobj = core.HPPOSLLH_publisher(topic_str, self.frame_id)
+        elif self.mode == 'POSLLH' :
+            self.intobj = core.POSLLH_publisher(topic_str, self.frame_id)
+        elif self.mode == 'RELPOS2D' :
+            self.intobj = core.RELPOS2D_publisher(topic_str, self.frame_id)
+        else:
+            raise ValueError('The mode string is not valid!!!')
+    def run(self):
+
+        # Run the node:
+
+        while(not rospy.is_shutdown()):
+            try:
+                ubx_msg = self.parser.receive_from(self.port)
+
+                # Define the timestamp
+                timestamp = rospy.get_rostime()
+
+                # Pass the ubx_msg to the interpreter/publisher object
+                self.intobj.pub(ubx_msg, timestamp)
+
+                
+
+
+            except (ValueError, IOError) as err:
+                print(err)
+
+            if self.delay != 0:
+                rospy.sleep(self.delay)
+            
+
+        self.port.close()
+
+
+
+        
+

@@ -1,0 +1,7 @@
+UBXNode_mode:       'DGPS'
+UBXNode_node_str:   'UBX_Publisher'
+UBXNode_frame_id:   'UBX_GPS'
+UBXNode_port:       '/dev/ArduSimple'
+UBXNode_baud:       115200
+UBXNode_topic_str:  'UBX_out'
+UBXNode_delay_sec:  1e-3
