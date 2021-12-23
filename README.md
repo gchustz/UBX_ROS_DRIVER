@@ -23,5 +23,10 @@ sudo ./setup.sh
 * [PySerial](https://pypi.org/project/pyserial/)
 * [ubxtranslator](https://github.com/dalymople/ubxtranslator)
 
+# Credit
+This work is adapted from:
+* https://github.com/dalymople/ubxtranslator
+* https://github.com/unmannedlab/ubxtranslator
+
 # License
 GPL v3.0
